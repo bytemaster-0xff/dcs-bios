@@ -65,6 +65,10 @@ type SetPortPrefRequest struct {
 	PortName string `json:portName`
 }
 
+type InitRequest struct {
+	ActionType string `json:actionType`
+}
+
 func (p *PortManager) HandlePortPrefRequest(req *SetPortPrefRequest, responseCh chan<- interface{}, followupCh <-chan interface{}) {
 	defer close(responseCh)
 	p.SetPortPreference(req.PortName, req.PortPreference)
@@ -91,6 +95,12 @@ func (p *PortManager) HandleMonitorPortRequest(req *MonitorSerialPortRequest, re
 	}
 }
 
+func (p *PortManager) SendInit(req *InitRequest, responseCh chan<- interface{}, followupCh <-chan interface{}) {
+	fmt.Println(("Send Init to all serial ports" + req.ActionType))
+	hdr := []byte{0x33, 0x33, 0x33, 0x33}
+	p.Write(hdr)
+}
+
 func (p *PortManager) SetupJSONApi(api *jsonapi.JsonApi) {
 	api.RegisterType("set_port_pref", SetPortPrefRequest{})
 	api.RegisterApiCall("set_port_pref", p.HandlePortPrefRequest)
@@ -98,6 +108,9 @@ func (p *PortManager) SetupJSONApi(api *jsonapi.JsonApi) {
 	api.RegisterType("monitor_serial_ports", MonitorSerialPortRequest{})
 	api.RegisterApiCall("monitor_serial_ports", p.HandleMonitorPortRequest)
 	api.RegisterType("port_state_snapshot", PortStateSnapshot{})
+
+	api.RegisterType("send_init", InitRequest{})
+	api.RegisterApiCall("send_init", p.SendInit)
 }
 
 // SubscribePortStateJsonChannel subscribes a channel to receive the PortState as JSON whenever it changes
@@ -274,6 +287,7 @@ func (p *PortManager) Write(data []byte) (n int, err error) {
 	for _, portState := range p.portState {
 		if sercon := portState.serialConnection; sercon != nil {
 			if sercon.GetState() != StateClosed {
+				fmt.Printf("Writing to %s", sercon.portName)
 				sercon.Write(data)
 			}
 		}

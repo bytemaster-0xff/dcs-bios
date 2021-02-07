@@ -66,8 +66,8 @@ function ControlReference() {
 
   let [moduleToCategory, setModuleToCategory] = useState<any>({});
   let exportDataParser = useState<ExportDataParser>(() => new ExportDataParser())[0]
-  const dummySend = (msg:any ) => console.log
-  let [ sendWebsocketMsg, setSendWebsocketMsg ] = useState<(msg: any)=>void>(dummySend)
+  const dummySend = (msg: any) => console.log
+  let [sendWebsocketMsg, setSendWebsocketMsg] = useState<(msg: any) => void>(dummySend)
 
   const liveDataCallbacks: TLiveDataContext = {
     subscribeExportCallback: exportDataParser.registerExportDataListener.bind(exportDataParser),
@@ -99,7 +99,7 @@ function ControlReference() {
       let a = new Uint8Array(data)
       for (let i = 0; i < a.length; i++) {
         exportDataParser.processByte(a[i])
-      } 
+      }
     }
     return () => {
       if (liveDataWebsocket) liveDataWebsocket.close();
@@ -142,15 +142,15 @@ function ControlReferenceIndex() {
       setModules(msg.data)
     })
   }, [])
-  
+
   let allModulesElement = (
-      <div>
-        <h2>Control Reference</h2>
-        {
-          moduleNames.map(name => <IndexCard key={name} moduleName={name} categories={modules[name]} />)
-        }
-      </div>);
-  
+    <div>
+      <h2>Control Reference</h2>
+      {
+        moduleNames.map(name => <IndexCard key={name} moduleName={name} categories={modules[name]} />)
+      }
+    </div>);
+
   return (
     <div>
       {allModulesElement}
@@ -257,7 +257,7 @@ function ControlReferenceSearchResults(props: { searchTerm: string, moduleName: 
 
   return (
     <div>{searchResults.length.toString()} results for {props.searchTerm}:
-    {makeResultUl()}
+      {makeResultUl()}
     </div>
   )
 }
@@ -613,18 +613,18 @@ function ServoOutputSnippet(props: { control: TIOElement, output: TOutputElement
 
 function StringBufferSnippet(props: { control: TIOElement, output: TOutputElement }) {
   let { control, output } = props;
-  return <code>void {idCamelCase("ON_"+control.name)}Change(char* newValue) {'{'}<br />
+  return <code>void {idCamelCase("ON_" + control.name)}Change(char* newValue) {'{'}<br />
     &nbsp;&nbsp;&nbsp;&nbsp;/* your code here */<br />
     {'}'}<br />
-    DcsBios::StringBuffer&lt;{output.max_length}&gt; {idCamelCase(control.name)}Buffer({hex(output.address)}, {idCamelCase("ON_"+control.name)}Change);</code>
+    DcsBios::StringBuffer&lt;{output.max_length}&gt; {idCamelCase(control.name)}Buffer({hex(output.address)}, {idCamelCase("ON_" + control.name)}Change);</code>
 }
 
 function IntegerBufferSnippet(props: { control: TIOElement, output: TOutputElement }) {
   let { control, output } = props;
-  return <code>void {idCamelCase("ON_"+control.name)}Change(unsigned int newValue) {'{'}<br />
+  return <code>void {idCamelCase("ON_" + control.name)}Change(unsigned int newValue) {'{'}<br />
     &nbsp;&nbsp;&nbsp;&nbsp;/* your code here */<br />
     {'}'}<br />
-    DcsBios::IntegerBuffer {idCamelCase(control.name)}Buffer({hex(output.address)}, {hex(output.mask)}, {output.shift_by.toString()}, {idCamelCase("ON_"+control.name)}Change);</code>
+    DcsBios::IntegerBuffer {idCamelCase(control.name)}Buffer({hex(output.address)}, {hex(output.mask)}, {output.shift_by.toString()}, {idCamelCase("ON_" + control.name)}Change);</code>
 }
 
 
