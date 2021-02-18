@@ -37,6 +37,8 @@ type InputCommand struct {
 	Command        []byte
 }
 
+
+
 type PortStateSnapshot map[string]PortState
 
 // PortManager manages a list of desired port configurations.
@@ -69,6 +71,11 @@ type InitRequest struct {
 	ActionType string `json:actionType`
 }
 
+type RawValueCommand struct {
+	Address int `json:address`
+	Value int `json:value`
+}
+
 func (p *PortManager) HandlePortPrefRequest(req *SetPortPrefRequest, responseCh chan<- interface{}, followupCh <-chan interface{}) {
 	defer close(responseCh)
 	p.SetPortPreference(req.PortName, req.PortPreference)
@@ -96,9 +103,13 @@ func (p *PortManager) HandleMonitorPortRequest(req *MonitorSerialPortRequest, re
 }
 
 func (p *PortManager) SendInit(req *InitRequest, responseCh chan<- interface{}, followupCh <-chan interface{}) {
-	fmt.Println(("Send Init to all serial ports" + req.ActionType))
-	hdr := []byte{0x33, 0x33, 0x33, 0x33}
-	p.Write(hdr)
+	fmt.Println(("Send Init to all serial ports " + req.ActionType))	
+	buf := []byte {0x33,0x33,0x33,0x33, 0}
+	p.Write(buf);
+}
+
+func (p *PortManager) SendRawValue(req *RawValueCommand, responseCh chan<- interface{}, followupCh <-chan interface{}) {
+
 }
 
 func (p *PortManager) SetupJSONApi(api *jsonapi.JsonApi) {
@@ -111,6 +122,9 @@ func (p *PortManager) SetupJSONApi(api *jsonapi.JsonApi) {
 
 	api.RegisterType("send_init", InitRequest{})
 	api.RegisterApiCall("send_init", p.SendInit)
+
+	api.RegisterType("send_raw_value", InitRequest{})
+	api.RegisterApiCall("send_raw_value", p.SendRawValue)	
 }
 
 // SubscribePortStateJsonChannel subscribes a channel to receive the PortState as JSON whenever it changes
@@ -287,7 +301,6 @@ func (p *PortManager) Write(data []byte) (n int, err error) {
 	for _, portState := range p.portState {
 		if sercon := portState.serialConnection; sercon != nil {
 			if sercon.GetState() != StateClosed {
-				fmt.Printf("Writing to %s", sercon.portName)
 				sercon.Write(data)
 			}
 		}

@@ -98,7 +98,9 @@ func (sc *SerialConnection) run() {
 	go func() {
 		scanner := bufio.NewScanner(sc.port)
 		for scanner.Scan() {
-			sc.InputCommands <- scanner.Bytes()
+			if(sc.state == StateOpen) {
+				sc.InputCommands <- scanner.Bytes()
+			}
 		}
 		sc.Close()
 	}()
